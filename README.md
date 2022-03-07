@@ -1,0 +1,1 @@
+DDNS scripts for legacy IP and real IP for Hetzner DNS API written in Bash
