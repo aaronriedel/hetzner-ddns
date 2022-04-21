@@ -68,7 +68,12 @@ fi
 #############################################
 echo -e "${PENDING} get Zones"
 HETZNER_API_ZONE=$(curl -s "https://dns.hetzner.com/api/v1/zones" -H "Auth-API-Token: ${HETZNER_API_TOKEN}" | jq -r ".zones[] | select(.name==\"$DNSZONE\") | .id")
-echo -e "${REPLACE}${SUCCESS} get DNS Zone"
+if [ -z $HETZNER_API_ZONE ]; then
+	echo -e "${REPLACE}${ERROR} get DNS Zone"
+	exit 1
+else
+	echo -e "${REPLACE}${SUCCESS} get DNS Zone"
+fi
 #############################################
 echo -e "${PENDING} Check DNS Console for existing records"
 RECORDS=$(curl -s "https://dns.hetzner.com/api/v1/records?zone_id=${HETZNER_API_ZONE}" \
