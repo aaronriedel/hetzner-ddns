@@ -28,7 +28,7 @@ UNDERLINE='\033[4m'
 REPLACE='\e[1A\e[K'
 
 PENDING="${NONE}[${YELLOW}....${NONE}]"
-DONE="${NONE}[${GREEN}DONE${NONE}]"
+DONE="${NONE}[${GREEN} OK ${NONE}]"
 FAIL="${NONE}[${RED}FAIL${NONE}]"
 INFO="${NONE}[${BOLD}INFO${NONE}]"
 #############################################
