@@ -1,9 +1,6 @@
 #!/bin/bash
 ##########################################################################################
-# SETTINGS
-HETZNER_API_TOKEN=""  # https://dns.hetzner.com/settings/api-token
-SERVERNAME=""         # desired subdomain  e.g. "server1"
-DNSZONE=""            # name of the zone in DNS Console  e.g. "example.com"
+source .env
 ##########################################################################################
 command_exists() {
     command -v "$1" >/dev/null 2>&1
@@ -44,7 +41,7 @@ response_code() {
 #############################################
 echo -e "${INFO} DDNS Manager by Aaron"
 echo -e "${INFO} started $(date)"
-echo -e "${INFO} DNS Record will be $SERVERNAME.$DNSZONE"
+echo -e "${INFO} DNS Record will be $SUBDOMAIN_IPV4.$DNSZONE_IPV4"
 echo -e "${PENDING} get IP address"
 IPv4="$(curl -s4 https://ip.hetzner.com)"
 if [ -z $IPv4 ]; then
@@ -67,7 +64,7 @@ fi
 
 #############################################
 echo -e "${PENDING} get Zones"
-HETZNER_API_ZONE=$(curl -s "https://dns.hetzner.com/api/v1/zones" -H "Auth-API-Token: ${HETZNER_API_TOKEN}" | jq -r ".zones[] | select(.name==\"$DNSZONE\") | .id")
+HETZNER_API_ZONE=$(curl -s "https://dns.hetzner.com/api/v1/zones" -H "Auth-API-Token: ${HETZNER_API_TOKEN}" | jq -r ".zones[] | select(.name==\"$DNSZONE_IPV4\") | .id")
 if [ -z $HETZNER_API_ZONE ]; then
 	echo -e "${REPLACE}${FAIL} get DNS Zone"
 	exit 1
@@ -79,7 +76,7 @@ echo -e "${PENDING} Check DNS Console for existing records"
 RECORDS=$(curl -s "https://dns.hetzner.com/api/v1/records?zone_id=${HETZNER_API_ZONE}" \
  -H "Auth-API-Token: ${HETZNER_API_TOKEN}")
 echo -e "${REPLACE}${DONE} Check DNS Console for existing records"
-echo $RECORDS | jq -r '.records[] | select(.type=="A") | .name' | grep -q $SERVERNAME
+echo $RECORDS | jq -r '.records[] | select(.type=="A") | .name' | grep -q $SUBDOMAIN_IPV4
 if [ $? -eq 1 ]; then
 	echo -e "${INFO} Record not found" 
 	echo -e "${PENDING} Set new Record"
@@ -90,7 +87,7 @@ if [ $? -eq 1 ]; then
 	  \"value\": \"${IPv4}\",
 	  \"ttl\": 60,
 	  \"type\": \"A\",
-	  \"name\": \"${SERVERNAME}\",
+	  \"name\": \"${SUBDOMAIN_IPV4}\",
 	  \"zone_id\": \"${HETZNER_API_ZONE}\"
 	}")
 	if [ $API_STATUS_CODE != "200" ]; then
@@ -101,8 +98,8 @@ if [ $? -eq 1 ]; then
 	fi
 else
 	echo -e "${INFO} Record already there"
-	RECORD_ID=$(echo $RECORDS | jq -r '.records[] | select(.type=="A") | select(.name=="'${SERVERNAME}'") | .id' | head -1)
-	OLD_IP=$(echo $RECORDS | jq -r '.records[] | select(.type=="A") | select(.name=="'${SERVERNAME}'") | .value' | head -1)
+	RECORD_ID=$(echo $RECORDS | jq -r '.records[] | select(.type=="A") | select(.name=="'${SUBDOMAIN_IPV4}'") | .id' | head -1)
+	OLD_IP=$(echo $RECORDS | jq -r '.records[] | select(.type=="A") | select(.name=="'${SUBDOMAIN_IPV4}'") | .value' | head -1)
 	echo -e "${INFO} Current IP from Record: $OLD_IP"
 	if [ $IPv4 != $OLD_IP ]; then
 		echo -e "${INFO} IP has changed"
@@ -114,7 +111,7 @@ else
 		  \"value\": \"${IPv4}\",
 		  \"ttl\": 60,
 		  \"type\": \"A\",
-		  \"name\": \"${SERVERNAME}\",
+		  \"name\": \"${SUBDOMAIN_IPV4}\",
 		  \"zone_id\": \"${HETZNER_API_ZONE}\"
 		}")
 		if [ $API_STATUS_CODE != "200" ]; then
