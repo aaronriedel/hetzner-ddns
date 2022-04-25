@@ -91,10 +91,10 @@ if [ $? -eq 1 ]; then
 	  \"zone_id\": \"${HETZNER_API_ZONE}\"
 	}")
 	if [ $API_STATUS_CODE != "200" ]; then
-		echo -e "${REPLACE}${FAIL} Set new Record $(response_code $API_STATUS_CODE)"
+		echo -e "${REPLACE}${FAIL} Set new Record ($(response_code $API_STATUS_CODE))"
 		exit 1
 	else
-		echo -e "${REPLACE}${DONE} Set new Record $(response_code $API_STATUS_CODE)"
+		echo -e "${REPLACE}${DONE} Set new Record ($(response_code $API_STATUS_CODE))"
 	fi
 else
 	echo -e "${INFO} Record already there"
@@ -115,10 +115,10 @@ else
 		  \"zone_id\": \"${HETZNER_API_ZONE}\"
 		}")
 		if [ $API_STATUS_CODE != "200" ]; then
-			echo -e "${REPLACE}${FAIL} Updating Record $(response_code $API_STATUS_CODE)"
+			echo -e "${REPLACE}${FAIL} Updating Record ($(response_code $API_STATUS_CODE))"
 			exit 1
 		else
-			echo -e "${REPLACE}${DONE} Updating Record $(response_code $API_STATUS_CODE)"
+			echo -e "${REPLACE}${DONE} Updating Record ($(response_code $API_STATUS_CODE))"
 		fi
 	else
 		echo -e "${INFO} IP has not changed"
