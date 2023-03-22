@@ -31,11 +31,11 @@ INFO="${NONE}[${BOLD}INFO${NONE}]"
 #############################################
 #HTTP Response Code Echo
 response_code() {
-	if [ $1 == "200" ]; then echo "$1 Success";
-	elif [ $1 == "401" ]; then echo "$1 Unauthorized" && exit 1;
-	elif [ $1 == "403" ]; then echo "$1 Forbidden" && exit 1;
-	elif [ $1 == "406" ]; then echo "$1 Not acceptable" && exit 1;
-	elif [ $1 == "422" ]; then echo "$1 Unprocessable entity" && exit 1;
+	if [[ $1 == "200" ]]; then echo "$1 Success";
+	elif [[ $1 == "401" ]]; then echo "$1 Unauthorized" && exit 1;
+	elif [[ $1 == "403" ]]; then echo "$1 Forbidden" && exit 1;
+	elif [[ $1 == "406" ]]; then echo "$1 Not acceptable" && exit 1;
+	elif [[ $1 == "422" ]]; then echo "$1 Unprocessable entity" && exit 1;
 	else echo "$1 Unknown Status Code" && exit 1; fi
 }
 #############################################
@@ -44,7 +44,7 @@ echo -e "${INFO} started $(date)"
 echo -e "${INFO} DNS Record will be $SUBDOMAIN_IPV6.$DNSZONE_IPV6"
 echo -e "${PENDING} get IP address"
 IPv6="$(curl -s6 https://ip.hetzner.com)"
-if [ -z $IPv6 ]; then
+if [[ -z $IPv6 ]]; then
 	echo -e "${REPLACE}${FAIL} IPv6 not found"
 	exit 1
 else
@@ -55,7 +55,7 @@ fi
 #############################################
 echo -e "${PENDING} attempt API connection"
 API_STATUS_CODE=$(curl -o /dev/null -s -w "%{http_code}" "https://dns.hetzner.com/api/v1/zones" -H "Auth-API-Token: ${HETZNER_API_TOKEN}")
-if [ $API_STATUS_CODE != "200" ]; then
+if [[ $API_STATUS_CODE != "200" ]]; then
 	echo -e "${REPLACE}${FAIL} attempt API connection ($(response_code $API_STATUS_CODE))"
 	exit 1
 else
@@ -65,7 +65,7 @@ fi
 #############################################
 echo -e "${PENDING} get Zones"
 HETZNER_API_ZONE=$(curl -s "https://dns.hetzner.com/api/v1/zones" -H "Auth-API-Token: ${HETZNER_API_TOKEN}" | jq -r ".zones[] | select(.name==\"$DNSZONE_IPV6\") | .id")
-if [ -z $HETZNER_API_ZONE ]; then
+if [[ -z $HETZNER_API_ZONE ]]; then
 	echo -e "${REPLACE}${FAIL} get DNS Zone"
 	exit 1
 else
@@ -76,9 +76,9 @@ echo -e "${PENDING} Check DNS Console for existing records"
 RECORDS=$(curl -s "https://dns.hetzner.com/api/v1/records?zone_id=${HETZNER_API_ZONE}" \
  -H "Auth-API-Token: ${HETZNER_API_TOKEN}")
 echo -e "${REPLACE}${DONE} Check DNS Console for existing records"
-echo $RECORDS | jq -r '.records[] | select(.type=="AAAA") | .name' | grep -q $SUBDOMAIN_IPV6
-if [ $? -eq 1 ]; then
-	echo -e "${INFO} Record not found" 
+echo $RECORDS | jq -r '.records[] | select(.type=="AAAA") | .name' | grep -qx $SUBDOMAIN_IPV6
+if [[ $? -eq 1 ]]; then
+	echo -e "${INFO} Record not found"
 	echo -e "${PENDING} Set new Record"
 	API_STATUS_CODE=$(curl -o /dev/null -s -w "%{http_code}" -X "POST" "https://dns.hetzner.com/api/v1/records" \
 	     -H 'Content-Type: application/json' \
@@ -90,7 +90,7 @@ if [ $? -eq 1 ]; then
 	  \"name\": \"${SUBDOMAIN_IPV6}\",
 	  \"zone_id\": \"${HETZNER_API_ZONE}\"
 	}")
-	if [ $API_STATUS_CODE != "200" ]; then
+	if [[ $API_STATUS_CODE != "200" ]]; then
 		echo -e "${REPLACE}${FAIL} Set new Record ($(response_code $API_STATUS_CODE))"
 		exit 1
 	else
@@ -101,7 +101,7 @@ else
 	RECORD_ID=$(echo $RECORDS | jq -r '.records[] | select(.type=="AAAA") | select(.name=="'${SUBDOMAIN_IPV6}'") | .id' | head -1)
 	OLD_IP=$(echo $RECORDS | jq -r '.records[] | select(.type=="AAAA") | select(.name=="'${SUBDOMAIN_IPV6}'") | .value' | head -1)
 	echo -e "${INFO} Current IP from Record: $OLD_IP"
-	if [ $IPv6 != $OLD_IP ]; then
+	if [[ $IPv6 != $OLD_IP ]]; then
 		echo -e "${INFO} IP has changed"
 		echo -e "${PENDING} Updating Record"
 		API_STATUS_CODE=$(curl -o /dev/null -s -w "%{http_code}" -X "PUT" "https://dns.hetzner.com/api/v1/records/$RECORD_ID" \
@@ -114,7 +114,7 @@ else
 		  \"name\": \"${SUBDOMAIN_IPV6}\",
 		  \"zone_id\": \"${HETZNER_API_ZONE}\"
 		}")
-		if [ $API_STATUS_CODE != "200" ]; then
+		if [[ $API_STATUS_CODE != "200" ]]; then
 			echo -e "${REPLACE}${FAIL} Updating Record ($(response_code $API_STATUS_CODE))"
 			exit 1
 		else
