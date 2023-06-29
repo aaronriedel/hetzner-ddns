@@ -45,6 +45,9 @@ echo -e "${INFO} DNS Record will be $SUBDOMAIN_IPV6.$DNSZONE_IPV6"
 echo -e "${PENDING} get IP address"
 IPv6="$(curl -s6 https://ip.hetzner.com)"
 if [[ -z $IPv6 ]]; then
+	IPv6="$(curl -s6 https://icanhazip.com)"
+fi
+if [[ -z $IPv6 ]]; then
 	echo -e "${REPLACE}${FAIL} IPv6 not found"
 	exit 1
 else

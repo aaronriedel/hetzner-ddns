@@ -45,6 +45,9 @@ echo -e "${INFO} DNS Record will be $SUBDOMAIN_IPV4.$DNSZONE_IPV4"
 echo -e "${PENDING} get IP address"
 IPv4="$(curl -s4 https://ip.hetzner.com)"
 if [[ -z $IPv4 ]]; then
+	IPv4="$(curl -s4 https://icanhazip.com)"
+fi	
+if [[ -z $IPv4 ]]; then
 	echo -e "${REPLACE}${FAIL} IPv4 not found"
 	exit 1
 else
