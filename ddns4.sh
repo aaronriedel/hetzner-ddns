@@ -44,10 +44,10 @@ echo -e "${INFO} started $(date)"
 echo -e "${INFO} DNS Record will be $SUBDOMAIN_IPV4.$DNSZONE_IPV4"
 echo -e "${PENDING} get IP address"
 IPv4="$(curl -s4 https://ip.hetzner.com)"
-if [[ -z $IPv4 ]]; then
+if [[ -z $IPv4 || ! $IPv4 =~ ^[0-9]{1,3}("."[0-9]{1,3}){3}$ ]]; then
 	IPv4="$(curl -s4 https://icanhazip.com)"
-fi	
-if [[ -z $IPv4 ]]; then
+fi
+if [[ -z $IPv4 || ! $IPv4 =~ ^[0-9]{1,3}("."[0-9]{1,3}){3}$ ]]; then
 	echo -e "${REPLACE}${FAIL} IPv4 not found"
 	exit 1
 else
